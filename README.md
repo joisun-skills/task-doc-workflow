@@ -21,7 +21,7 @@ Install `obra/superpowers` for your agent first. Then clone this repository into
 an Agent Skills directory:
 
 ```bash
-git clone https://github.com/joisun/task-doc-workflow.git \
+git clone https://github.com/joisun-skills/task-doc-workflow.git \
   ~/.agents/skills/task-doc-workflow
 ```
 
@@ -33,7 +33,7 @@ To manage it inside another Git repository:
 
 ```bash
 git submodule add \
-  https://github.com/joisun/task-doc-workflow.git \
+  https://github.com/joisun-skills/task-doc-workflow.git \
   path/to/skills/task-doc-workflow
 ```
 
