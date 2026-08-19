@@ -15,7 +15,8 @@ task 级 checkbox 同步在 ../02-tasks.md。
 
 - **做了什么**：<一到两句话，不要复述 task 文件里已有的内容>
 - **commit**：<commit hash，多个用逗号分隔；commit message 遵循 SKILL.md 的 Commit 规范
-  （`phase<N>/task<NN>: ... (#task-<NN>-<slug>)`）>
+  （`<job-slug>/phase<N>/task<NN>: ...`，body 含 `#job-<job-slug>` 与
+  `#task-<NN>-<slug>`）>
 - **和计划不一致的地方**：<如果执行中发现计划有误或需要调整，写在这里，并同步回 ../01-plan.md>
 - **验收结果**：<对照 task 的验收标准，逐条确认，或说明为什么某条暂时不满足>
 - **可复用经验**：<无；或链接到 ../lessons.md 中本轮新增/更新的条目>

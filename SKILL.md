@@ -138,6 +138,39 @@ docs/job/<job-slug>/
    只有根因明确、方案验证通过且可能复用的结论才进入 `lessons.md`。
 7. **经验先去重再写入**：相同根因优先补充已有条目，不创建措辞不同但内容重复的新条目。
 
+## Commit 规范
+
+**Task 级别（多数 commit）**：
+
+```
+<job-slug>/phase<N>/task<NN>: <一行祈使句摘要，建议≤50字符>
+<body>
+#job-<job-slug>
+#task-<NN>-<slug>
+```
+
+例：`auth-migration/phase1/task03: migrate auth middleware to token store`
+
+`<job-slug>` 必须与 `docs/job/<job-slug>/` 的目录名一致。把 job 写入 subject，可以避免不同
+job 中相同的 phase/task 编号在 Git 历史里发生歧义；body 中的 `#job-*` 和 `#task-*` 仍然保留，
+用于稳定检索和机器化追溯。
+
+如果一个 task 因为 TDD 红绿灯等原因拆成多个小 commit，**每个都带相同的前缀和 task 引用**，
+这样 `git log --grep="#task-03-migrate-auth"` 能一次性拉出这个 task 的全部改动。
+
+**里程碑级别（不绑定具体 task 的 commit，例如 plan 确认后的一次性提交）**：
+
+```
+job/<job-slug>: <里程碑描述>
+```
+
+例：`job/auth-migration: plan confirmed, entering task execution`
+
+文档改动（`docs/job/` 下的文件）和代码改动**不做区分，混在同一批 commit 里**提交。
+
+**追溯链路**：`phases/phase-N-log.md` 每条记录里写下对应的 commit hash（可以是多个），
+形成 task 文件 ↔ 日志 ↔ commit ↔ 实际 diff 的完整链路，审查者不需要去猜"这个 task 改了什么"。
+
 ## 核心规则（按优先级分层）
 
 **Critical（违反=流程失效，必须遵守）**
@@ -148,7 +181,7 @@ docs/job/<job-slug>/
 
 **Important（明显影响可追溯性/质量，默认应遵守，特殊情况可说明原因后偏离）**
 
-- 每个 task 至少一次 commit，commit message 按下方"Commit 规范"来，日志里记录 commit hash。
+- 每个 task 至少一次 commit，commit message 按“Commit 规范”执行，日志里记录 commit hash。
 - 遇到非预期错误/库的怪异行为时，第一时间查官方文档/GitHub issue/社区讨论，不要第一反应就本地试错打补丁（见下方"外部资料优先原则"）。
 - 可复用问题解决并验证后，在同一次执行循环中更新 `lessons.md`，避免结论只留在对话或日志里。
 - 测试报告发现的遗漏项转成新 task 追加进 `02-tasks.md` / `tasks/`，不当场顺手改代码了事。
@@ -189,35 +222,6 @@ GitHub issue/discussions，再动手改代码**，不是等本地试错几次都
 开始类似迁移、升级或排障任务时，先按技术栈、版本、错误文本和迁移阶段检索已有 lessons；
 只读取相关条目，并把适用的预防检查同步到 `01-plan.md`、task 验收标准或测试计划中。若用户把
 其他项目纳入当前范围，也检索那些项目的同一路径；不要擅自扫描范围外目录。
-
-## Commit 规范
-
-**Task 级别（多数 commit）**：
-
-```
-phase<N>/task<NN>: <一行祈使句摘要，建议≤50字符>
-<body>
-#job-<job-slug>
-#task-<NN>-<slug>
-```
-
-例：`phase1/task03: migrate auth middleware to token store (#task-03-migrate-auth)`
-
-如果一个 task 因为 TDD 红绿灯等原因拆成多个小 commit，**每个都带相同的前缀和 task 引用**，
-这样 `git log --grep="task-03"` 能一次性拉出这个 task 的全部改动。
-
-**里程碑级别（不绑定具体 task 的 commit，例如 plan 确认后的一次性提交）**：
-
-```
-job/<job-slug>: <里程碑描述>
-```
-
-例：`job/auth-migration: plan confirmed, entering task execution`
-
-文档改动（`docs/job/` 下的文件）和代码改动**不做区分，混在同一批 commit 里**提交。
-
-**追溯链路**：`phases/phase-N-log.md` 每条记录里写下对应的 commit hash（可以是多个），
-形成 task 文件 ↔ 日志 ↔ commit ↔ 实际 diff 的完整链路，审查者不需要去猜"这个 task 改了什么"。
 
 ## 工作流程（实现细节）
 
