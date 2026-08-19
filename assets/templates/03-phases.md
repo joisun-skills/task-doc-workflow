@@ -61,7 +61,6 @@ Plan 阶段确认后才填入，Discussion/Plan 阶段之前留空。
 | [04-test-plan.md](./04-test-plan.md) | 测试计划 | |
 | [05-test-cases.md](./05-test-cases.md) | 测试用例矩阵 | |
 | [06-test-report.md](./06-test-report.md) | 测试报告 | |
-| [lessons.md](./lessons.md) | 已验证、可复用的问题经验（按需创建） | |
 
 ## 变更记录
 

@@ -2,8 +2,8 @@
 
 An Agent Skill that gives long-running engineering work a resumable,
 Git-friendly documentation structure under `docs/job/<job-slug>/`. It keeps
-scope, plans, task contracts, phase logs, test coverage, and verified lessons
-connected without repeatedly loading one large planning document.
+scope, plans, task contracts, phase logs, and test coverage connected without
+repeatedly loading one large planning document.
 
 ## Requirements
 
@@ -50,7 +50,6 @@ docs/job/<job-slug>/
 ├── 04-test-plan.md
 ├── 05-test-cases.md
 ├── 06-test-report.md
-├── lessons.md
 ├── phases/
 └── tasks/
 ```

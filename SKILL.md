@@ -1,6 +1,6 @@
 ---
 name: task-doc-workflow
-description: Provides a standardized, resumable documentation structure (docs/job/JOB-SLUG/) for executing non-trivial multi-step tasks — refactors, feature builds, migrations, investigations, or any work that could span multiple conversations — and captures verified, reusable problem-solving lessons for similar work. This skill has a hard dependency on the obra/superpowers skill suite (brainstorming, writing-plans, subagent-driven-development or executing-plans, test-driven-development, systematic-debugging, finishing-a-development-branch); it does not operate without them. Use this whenever the user starts a task that will take multiple steps or sessions, explicitly asks to "track progress", "记录任务进度", "整理任务文档", "断点续传", "写测试计划/测试用例", or when a task is complex enough that losing context mid-way would be costly. Also use when the user asks to set up project documentation conventions. Do not use for simple one-shot requests answerable in a single turn.
+description: Provides a standardized, resumable documentation structure (docs/job/JOB-SLUG/) for executing non-trivial multi-step tasks — refactors, feature builds, migrations, investigations, or any work that could span multiple conversations. This skill has a hard dependency on the obra/superpowers skill suite (brainstorming, writing-plans, subagent-driven-development or executing-plans, test-driven-development, systematic-debugging, finishing-a-development-branch); it does not operate without them. Use this whenever the user starts a task that will take multiple steps or sessions, explicitly asks to "track progress", "记录任务进度", "整理任务文档", "断点续传", "写测试计划/测试用例", or when a task is complex enough that losing context mid-way would be costly. Also use when the user asks to set up project documentation conventions. Do not use for simple one-shot requests answerable in a single turn.
 ---
 
 # 任务文档工作流 (task-doc-workflow)
@@ -106,7 +106,6 @@ docs/job/<job-slug>/
 ├── 04-test-plan.md              # 测试计划（回归点清单）
 ├── 05-test-cases.md             # 测试用例矩阵
 ├── 06-test-report.md            # 测试报告（含遗漏项闭环）
-├── lessons.md                   # 已验证、可复用的问题经验（首次需要时创建）
 ├── phases/
 │   └── phase-N-log.md           # 追加式执行日志（含 commit hash）
 └── tasks/
@@ -117,8 +116,6 @@ docs/job/<job-slug>/
 编号 00-06 反映的是工作流阶段顺序，不是文件夹嵌套关系——`phases/` 和 `tasks/` 是
 两个独立的顶层目录，分别装"多个 phase 的日志"和"多个 task 的详情"，不挂在某个编号
 文件底下，这样 00-06 每一个都稳定是单个文件，翻目录时不会有的是文件、有的是文件夹。
-`lessons.md` 不属于某个阶段，因此不编号；它从执行日志中提炼跨 task/job 可复用的结论。
-
 `<job-slug>` 用 kebab-case，例如 `auth-migration`。是否加日期前缀由用户决定，不强制。
 
 ## Invariants（不变量）
@@ -134,9 +131,6 @@ docs/job/<job-slug>/
 5. **幂等性**：本技能的任何一步被重复执行，都不应该产生重复的 task、重复的日志条目、
    重复创建已存在的文件，也不应该覆盖用户已经手动编辑过的内容。执行前先检查目标文件/
    条目是否已存在，已存在则跳过或增量更新，不要无脑重新生成。
-6. **经验必须已验证**：未解决的问题、临时猜测和只对当次操作有意义的流水账留在 phase log；
-   只有根因明确、方案验证通过且可能复用的结论才进入 `lessons.md`。
-7. **经验先去重再写入**：相同根因优先补充已有条目，不创建措辞不同但内容重复的新条目。
 
 ## Commit 规范
 
@@ -183,7 +177,6 @@ job/<job-slug>: <里程碑描述>
 
 - 每个 task 至少一次 commit，commit message 按“Commit 规范”执行，日志里记录 commit hash。
 - 遇到非预期错误/库的怪异行为时，第一时间查官方文档/GitHub issue/社区讨论，不要第一反应就本地试错打补丁（见下方"外部资料优先原则"）。
-- 可复用问题解决并验证后，在同一次执行循环中更新 `lessons.md`，避免结论只留在对话或日志里。
 - 测试报告发现的遗漏项转成新 task 追加进 `02-tasks.md` / `tasks/`，不当场顺手改代码了事。
 
 **Preferred（值得做，但可以按情况灵活处理）**
@@ -205,24 +198,6 @@ GitHub issue/discussions，再动手改代码**，不是等本地试错几次都
 让这个判断本身可追溯。这一条和 `systematic-debugging` 的四阶段根因排查（偏内部代码层面的
 证据收集）互补，不是重复——外部资料优先原则覆盖的是它没覆盖的"这是不是一个已知问题"。
 
-## 可复用经验（lessons.md）
-
-`phases/` 回答“这次发生了什么”，`lessons.md` 回答“下次怎样更快识别、解决或避免”。
-满足以下条件时，从 `assets/templates/lessons.md` 按需创建文件或更新已有条目：
-
-- 问题已经解决并通过测试、日志或可复现步骤验证；
-- 根因不是显而易见的拼写或一次性操作失误；
-- 结论对类似依赖、框架、版本、迁移步骤或项目仍可能适用。
-
-写入前先搜索当前 job 和仓库内的 `docs/job/**/lessons.md`。同一根因已存在时补充它的适用范围、
-新证据或替代方案，并链接回本次 task/phase log/commit；不要复制一份近义条目。条目至少包含
-现象、根因与证据、解决方案、验证方式、预防措施、适用边界和来源。不要记录 secret、token、
-真实账号或其他敏感数据。
-
-开始类似迁移、升级或排障任务时，先按技术栈、版本、错误文本和迁移阶段检索已有 lessons；
-只读取相关条目，并把适用的预防检查同步到 `01-plan.md`、task 验收标准或测试计划中。若用户把
-其他项目纳入当前范围，也检索那些项目的同一路径；不要擅自扫描范围外目录。
-
 ## 工作流程（实现细节）
 
 ### 0. 初始化工作空间
@@ -238,8 +213,7 @@ cp assets/templates/00-discussion.md docs/job/<job-slug>/00-discussion.md
 先只创建 `03-phases.md` 和 `00-discussion.md`，其余文件在流程走到对应阶段时再从模板复制——
 空文件没有信息量，只会造成"到底写了没有"的困惑（也呼应幂等性：不要一次性把所有阶段的
 文件都创建出来，之后又要判断哪些是"真正开始了"哪些只是占位）。`03-phases.md` 的
-"阶段列表"区块此时先留空，Plan 确认后再填。`lessons.md` 也不预先创建，首次出现符合
-记录条件的已验证经验时再从模板生成。
+"阶段列表"区块此时先留空，Plan 确认后再填。
 
 若是代码类任务，委托 `superpowers:using-git-worktrees` 创建隔离的工作分支/worktree。
 
@@ -250,8 +224,6 @@ cp assets/templates/00-discussion.md docs/job/<job-slug>/00-discussion.md
 "明确排除的范围"两个区块——这是断点续传要用到、但 brainstorming 本身不产出的部分。
 按上面的平台规则使用 `request_user_input` 或 `AskUserQuestion` 逐条澄清，一次问一个，
 优先给选项而非开放式提问，每问完立刻记结论。
-对迁移、升级和排障任务，先检索范围内已有的 `docs/job/**/lessons.md`，把适用经验作为
-方案约束、风险或验证项，而不是原样复制进讨论文档。
 结束时必须有人类在"范围确认"区块签字，才能进入下一步。
 
 ### 2. Plan
@@ -283,9 +255,7 @@ task 完成的前后做同步动作：
 3. 完成后，在 `02-tasks.md` 把对应 checkbox 改成 `[x]`（或 `[!]` 并说明阻塞原因）。
 4. 在 `phases/phase-N-log.md`（模板：`assets/templates/phases/phase-log-template.md`）
    追加一条记录：做了什么、commit hash、和计划是否有出入、验收结果、下一步。
-5. 若本轮解决了符合条件的可复用问题，去重后创建或更新 `lessons.md`，并在 phase log
-   链接对应 lesson；尚未验证的判断只留在日志中。
-6. 更新 `03-phases.md` 的 `current_task`、"现在在哪"、"下一步"；一个 phase 下全部
+5. 更新 `03-phases.md` 的 `current_task`、"现在在哪"、"下一步"；一个 phase 下全部
    task 完成后，把该 phase 的 checkbox 也改成 `[x]`。
 
 ### 5. Test Plan
@@ -306,9 +276,8 @@ task 完成的前后做同步动作：
 测试中发现的、计划里没考虑到的问题（遗漏项），转成新 task 追加进 `02-tasks.md` /
 `tasks/`，回到步骤 4 的循环，不当场顺手修。P0 用例全部通过才能视为完成；否则
 `03-phases.md` 的 status 保持 `in_progress` 或标为 `blocked`。确认可交付后，委托
-`superpowers:finishing-a-development-branch` 做测试验证、merge/PR 选择、worktree 清理；
-本技能还要回扫 phase log，把已经验证但尚未沉淀的可复用结论补进 `lessons.md`，再将
-`03-phases.md` 的 status 更新为 `done`。
+`superpowers:finishing-a-development-branch` 做测试验证、merge/PR 选择、worktree 清理，
+再将 `03-phases.md` 的 status 更新为 `done`。
 
 ## 跨平台兼容性说明
 
@@ -330,7 +299,6 @@ task 完成的前后做同步动作：
 不是每个任务都需要走满 7 步。经验法则：
 
 - 一次性的小改动、几分钟能说清楚的事，不要套这套流程，直接做（也不需要 superpowers 依赖检查）。
-- 没有活跃 job 时，单独记录一条经验不要初始化整套流程；直接更新用户指定的经验文档。
 - 只有 1-2 个 phase、没有明显回归风险的任务，可以跳过 05/06/07（测试三件套），但
   `03-phases.md` + `00-discussion.md` + `01-plan.md` + `02-tasks.md` 建议保留。
 - 是否使用本流程、用到哪一步，应该和用户确认，而不是默认套满全流程增加负担。
